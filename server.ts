@@ -7,21 +7,26 @@ const app = express();
 
 app.use(requestIp.mw());
 
+const api_key = "d9c9f84ddd18db1d274e1896a63f79c9"
+
 app.get('/api/hello', async (req: Request, res: Response) => {
     const visitorName = req.query.visitor_name as string;
     const clientIp = req.clientIp || 'unknown';
 
     try {
         // Make a request to the geolocation API
-        const response = await axios.get(`http://ip-api.com/json/${clientIp}`);
-        const data = response.data;
-        const location = data.city || 'unknown';
-        const temperature = 11; // Mock temperature data
+        const locationResponse = await axios.get(`http://ip-api.com/json/${clientIp}`);
+        const locationData = locationResponse.data;
+        const city = locationData.city || 'unknown';
+      
+        const weatherResponse = await axios.get(`http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${api_key}&units=metric`);
+        const weatherData = weatherResponse.data;
+        const temperature = weatherData.main.temp;
 
         const apiResponse = {
             client_ip: clientIp,
-            location: location,
-            greeting: `Hello, ${visitorName}!, the temperature is ${temperature} degrees Celsius in ${location}`
+            location: city,
+            greeting: `Hello, ${visitorName}!, the temperature is ${temperature} degrees Celsius in ${city}`
         };
 
         res.json(apiResponse);
