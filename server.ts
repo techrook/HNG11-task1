@@ -2,12 +2,14 @@ import express from 'express';
 import { Request, Response } from 'express';
 import requestIp from 'request-ip';
 import axios from 'axios';
+import dotenv from 'dotenv';
 
+dotenv.config();
 const app = express();
 
 app.use(requestIp.mw());
 
-const api_key = "d9c9f84ddd18db1d274e1896a63f79c9"
+const api_key = process.env.OPENWEATHERMAP_API_KEY;
 
 app.get('/api/hello', async (req: Request, res: Response) => {
     const visitorName = req.query.visitor_name as string;
