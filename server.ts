@@ -45,7 +45,7 @@ app.get('/api/hello', async (req: Request, res: Response) => {
         res.json(apiResponse);
     } catch (error) {
         console.error('Error fetching location or weather data:', error);
-        res.status(500).json({ error: 'Unable to fetch location or weather data' });
+        res.status(500).json({ error: `Unable to fetch location or weather data${error}` });
     }
 });
 
