@@ -1,38 +1,33 @@
-import express from 'express';
-import { Request, Response } from 'express';
-import requestIp from 'request-ip';
+import express, { Request, Response } from 'express';
 import axios from 'axios';
 import dotenv from 'dotenv';
+import requestIp from 'request-ip';
 
 dotenv.config();
 const app = express();
 
-app.use(requestIp.mw());
+const ipinfoToken = process.env.IPINFO_API_TOKEN as string;
+const openWeatherMapApiKey = process.env.OPENWEATHERMAP_API_KEY as string;
 
-const api_key = process.env.OPENWEATHERMAP_API_KEY;
+interface IpinfoResponse {
+    city?: string;
+    // Add more fields as needed based on ipinfo.io response
+}
+
+app.use(requestIp.mw());
+app.use(express.json());
 
 app.get('/api/hello', async (req: Request, res: Response) => {
     const visitorName = req.query.visitor_name as string;
-    const clientIp = req.clientIp || 'unknown';
+    const clientIp = req.clientIp || 'unknown';// Express typings already provide req.ip
 
     try {
-        if (!api_key) {
-            throw new Error('OpenWeatherMap API key is not defined.');
-        }
+        const ipinfoResponse = await axios.get<IpinfoResponse>(`https://ipinfo.io/${clientIp}?token=${ipinfoToken}`);
+        const ipinfoData = ipinfoResponse.data;
+        const city = ipinfoData.city || 'unknown';
 
-        // Make a request to the geolocation API
-        const locationResponse = await axios.get(`http://ip-api.com/json/${clientIp}`);
-        const locationData = locationResponse.data;
-        const city = locationData.city || 'unknown';
-
-        // Make a request to OpenWeatherMap API
-        const weatherResponse = await axios.get(`http://api.openweathermap.org/data/2.5/weather`, {
-            params: {
-                q: city,
-                appid: api_key,
-                units: 'metric'
-            }
-        });
+        // Fetch weather data
+        const weatherResponse = await axios.get(`http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${openWeatherMapApiKey}&units=metric`);
         const weatherData = weatherResponse.data;
         const temperature = weatherData.main.temp;
 
@@ -44,8 +39,8 @@ app.get('/api/hello', async (req: Request, res: Response) => {
 
         res.json(apiResponse);
     } catch (error) {
-        console.error('Error fetching location or weather data:', error);
-        res.status(500).json({ error: `Unable to fetch location or weather data${error}` });
+        console.error('Error fetching location data:', error);
+        res.status(500).json({ error: 'Unable to fetch location data' });
     }
 });
 
