@@ -13,24 +13,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const request_ip_1 = __importDefault(require("request-ip"));
 const axios_1 = __importDefault(require("axios"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const request_ip_1 = __importDefault(require("request-ip"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
+const ipinfoToken = process.env.IPINFO_API_TOKEN;
+const openWeatherMapApiKey = process.env.OPENWEATHERMAP_API_KEY;
 app.use(request_ip_1.default.mw());
-const api_key = process.env.OPENWEATHERMAP_API_KEY;
+app.use(express_1.default.json());
 app.get('/api/hello', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const visitorName = req.query.visitor_name;
-    const clientIp = req.clientIp || 'unknown';
+    const clientIp = req.clientIp || 'unknown'; // Express typings already provide req.ip
     try {
-        console.log(api_key);
-        // Make a request to the geolocation API
-        const locationResponse = yield axios_1.default.get(`http://ip-api.com/json/${clientIp}`);
-        const locationData = locationResponse.data;
-        const city = locationData.city || 'unknown';
-        console.log(city);
-        const weatherResponse = yield axios_1.default.get(`http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${api_key}&units=metric`);
+        const ipinfoResponse = yield axios_1.default.get(`https://ipinfo.io/${clientIp}?token=${ipinfoToken}`);
+        const ipinfoData = ipinfoResponse.data;
+        const city = ipinfoData.city || 'unknown';
+        // Fetch weather data
+        const weatherResponse = yield axios_1.default.get(`http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${openWeatherMapApiKey}&units=metric`);
         const weatherData = weatherResponse.data;
         const temperature = weatherData.main.temp;
         const apiResponse = {
@@ -41,7 +41,6 @@ app.get('/api/hello', (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.json(apiResponse);
     }
     catch (error) {
-        console.log(clientIp);
         console.error('Error fetching location data:', error);
         res.status(500).json({ error: 'Unable to fetch location data' });
     }

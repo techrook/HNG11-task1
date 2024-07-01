@@ -6,8 +6,8 @@ import requestIp from 'request-ip';
 dotenv.config();
 const app = express();
 
-const ipinfoToken = process.env.IPINFO_API_TOKEN as string;
-const openWeatherMapApiKey = process.env.OPENWEATHERMAP_API_KEY as string;
+const ipinfoToken = "029a3a93101e04"as string;
+const openWeatherMapApiKey = "d9c9f84ddd18db1d274e1896a63f79c9" as string;
 
 interface IpinfoResponse {
     city?: string;
