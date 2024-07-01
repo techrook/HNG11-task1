@@ -18,8 +18,8 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const request_ip_1 = __importDefault(require("request-ip"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
-const ipinfoToken = process.env.IPINFO_API_TOKEN;
-const openWeatherMapApiKey = process.env.OPENWEATHERMAP_API_KEY;
+const ipinfoToken = "029a3a93101e04";
+const openWeatherMapApiKey = "d9c9f84ddd18db1d274e1896a63f79c9";
 app.use(request_ip_1.default.mw());
 app.use(express_1.default.json());
 app.get('/api/hello', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
