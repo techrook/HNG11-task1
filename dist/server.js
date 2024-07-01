@@ -1,0 +1,49 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const request_ip_1 = __importDefault(require("request-ip"));
+const axios_1 = __importDefault(require("axios"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+const app = (0, express_1.default)();
+app.use(request_ip_1.default.mw());
+const api_key = process.env.OPENWEATHERMAP_API_KEY;
+app.get('/api/hello', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const visitorName = req.query.visitor_name;
+    const clientIp = req.clientIp || 'unknown';
+    try {
+        // Make a request to the geolocation API
+        const locationResponse = yield axios_1.default.get(`http://ip-api.com/json/${clientIp}`);
+        const locationData = locationResponse.data;
+        const city = locationData.city || 'unknown';
+        const weatherResponse = yield axios_1.default.get(`http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${api_key}&units=metric`);
+        const weatherData = weatherResponse.data;
+        const temperature = weatherData.main.temp;
+        const apiResponse = {
+            client_ip: clientIp,
+            location: city,
+            greeting: `Hello, ${visitorName}!, the temperature is ${temperature} degrees Celsius in ${city}`
+        };
+        res.json(apiResponse);
+    }
+    catch (error) {
+        console.error('Error fetching location data:', error);
+        res.status(500).json({ error: 'Unable to fetch location data' });
+    }
+}));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
